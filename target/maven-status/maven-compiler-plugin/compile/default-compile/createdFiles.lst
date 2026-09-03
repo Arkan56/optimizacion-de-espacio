@@ -1,0 +1,9 @@
+com\logistica\model\Furgon.class
+com\logistica\Main$1.class
+com\logistica\solver\PackSolverLIFO.class
+com\logistica\Main.class
+com\logistica\model\Nevera$Tipo.class
+com\logistica\gui\FurgonViewer3D.class
+com\logistica\Main$ConfiguracionNevera.class
+com\logistica\model\Nevera.class
+com\logistica\model\Pedido.class
