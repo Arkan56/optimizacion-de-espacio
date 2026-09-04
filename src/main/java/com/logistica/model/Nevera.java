@@ -61,6 +61,10 @@ public class Nevera {
         return posZ;
     }
 
+    public double getPesoKg() {
+        return pesoKg;
+    }
+
     public void setPosicion(double x, double y, double z) {
         this.posX = x;
         this.posY = y;

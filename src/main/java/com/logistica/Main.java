@@ -56,6 +56,11 @@ public class Main extends Application {
         private TextField anchoField;
         private TextField altoField;
         private TextField largoField;
+        private Label volumenUtilizadoLabel;
+        private Label neverasTotalesLabel;
+        private Label pesoTotalLabel;
+        private Label paradasTotalesLabel;
+        private Label pesoVolumetricoLabel;
 
         private Furgon furgonActual;
 
@@ -87,6 +92,43 @@ public class Main extends Application {
 
                 Button actualizarButton = new Button("Actualizar furgón");
                 Button optimizarButton = new Button("🚀 Optimizar carga");
+
+                volumenUtilizadoLabel = new Label("0%");
+                neverasTotalesLabel = new Label("0");
+                pesoTotalLabel = new Label("0 kg");
+                paradasTotalesLabel = new Label("0");
+                pesoVolumetricoLabel = new Label("0 kg");
+
+                VBox volumenIndicador = crearIndicador(
+                                "📦 Volumen utilizado",
+                                volumenUtilizadoLabel);
+
+                VBox neverasIndicador = crearIndicador(
+                                "🧊 Neveras totales",
+                                neverasTotalesLabel);
+
+                VBox pesoIndicador = crearIndicador(
+                                "⚖ Peso total",
+                                pesoTotalLabel);
+
+                VBox paradasIndicador = crearIndicador(
+                                "📍 Paradas totales",
+                                paradasTotalesLabel);
+
+                VBox pesoVolumetricoIndicador = crearIndicador(
+                                "📐 Peso volumétrico",
+                                pesoVolumetricoLabel);
+
+                HBox indicadores = new HBox(
+                                30,
+                                volumenIndicador,
+                                neverasIndicador,
+                                pesoIndicador,
+                                paradasIndicador,
+                                pesoVolumetricoIndicador);
+
+                indicadores.setAlignment(Pos.CENTER);
+                indicadores.setPadding(new Insets(10));
 
                 // ==========================================
                 // EVENTO DEL BOTÓN
@@ -222,9 +264,13 @@ public class Main extends Application {
                 // LAYOUT PRINCIPAL
                 // ==========================================
 
+                VBox parteSuperior = new VBox(
+                                controles,
+                                indicadores);
+
                 BorderPane root = new BorderPane();
 
-                root.setTop(controles);
+                root.setTop(parteSuperior);
                 root.setCenter(splitPane);
 
                 Scene scene = new Scene(root, 1000, 700);
@@ -235,8 +281,124 @@ public class Main extends Application {
                 // Crear el furgón inicial
                 crearPedidosPrueba();
                 actualizarFurgon();
+                actualizarIndicadores();
 
                 primaryStage.show();
+        }
+
+        private VBox crearIndicador(
+                        String titulo,
+                        Label valorLabel) {
+
+                Label tituloLabel = new Label(titulo);
+
+                tituloLabel.setStyle(
+                                "-fx-font-size: 12px;"
+                                                + "-fx-text-fill: #666666;");
+
+                valorLabel.setStyle(
+                                "-fx-font-size: 18px;"
+                                                + "-fx-font-weight: bold;");
+
+                VBox indicador = new VBox(
+                                5,
+                                tituloLabel,
+                                valorLabel);
+
+                indicador.setAlignment(Pos.CENTER);
+
+                indicador.setPadding(new Insets(10));
+
+                return indicador;
+        }
+
+        private void actualizarIndicadores() {
+
+                // ==========================================
+                // OBTENER TODAS LAS NEVERAS
+                // ==========================================
+
+                List<Nevera> neveras = obtenerNeverasDePedidos();
+
+                // ==========================================
+                // NEVERAS TOTALES
+                // ==========================================
+
+                int totalNeveras = neveras.size();
+
+                neverasTotalesLabel.setText(
+                                String.valueOf(totalNeveras));
+
+                // ==========================================
+                // PESO TOTAL
+                // ==========================================
+
+                double pesoTotal = 0;
+
+                for (Nevera nevera : neveras) {
+
+                        pesoTotal += nevera.getPesoKg();
+                }
+
+                pesoTotalLabel.setText(
+                                String.format("%.2f kg", pesoTotal));
+
+                // ==========================================
+                // PARADAS TOTALES
+                // ==========================================
+
+                int totalParadas = pedidos.size();
+
+                paradasTotalesLabel.setText(
+                                String.valueOf(totalParadas));
+
+                // ==========================================
+                // PESO VOLUMÉTRICO
+                // ==========================================
+
+                double pesoVolumetricoTotal = 0;
+                // Define el factor de conversión (5000 es el estándar internacional más común)
+                final double FACTOR_CONVERSION = 5000.0;
+
+                for (Nevera nevera : neveras) {
+                        double volumen = nevera.getLargo()
+                                        * nevera.getAncho()
+                                        * nevera.getAlto();
+
+                        // Calculas el peso volumétrico de esta nevera y lo sumas al total
+                        pesoVolumetricoTotal += (volumen / FACTOR_CONVERSION);
+                }
+
+                pesoVolumetricoLabel.setText(String.format("%.2f kg", pesoVolumetricoTotal));
+
+                // ==========================================
+                // VOLUMEN UTILIZADO
+                // ==========================================
+
+                if (furgonActual != null) {
+
+                        double volumenFurgon = furgonActual.getLargo()
+                                        * furgonActual.getAncho()
+                                        * furgonActual.getAlto();
+
+                        double volumenNeveras = 0;
+
+                        for (Nevera nevera : neveras) {
+
+                                volumenNeveras += nevera.getLargo()
+                                                * nevera.getAncho()
+                                                * nevera.getAlto();
+                        }
+
+                        double porcentaje = (volumenNeveras / volumenFurgon) * 100;
+
+                        volumenUtilizadoLabel.setText(
+                                        String.format("%.2f %%", porcentaje));
+
+                } else {
+
+                        volumenUtilizadoLabel.setText("0%");
+                }
         }
 
         // ==========================================
@@ -273,6 +435,8 @@ public class Main extends Application {
                                         largo,
                                         ancho,
                                         alto);
+
+                        actualizarIndicadores();
 
                         mostrarInformacion(
                                         "Furgón actualizado correctamente.");
@@ -674,6 +838,7 @@ public class Main extends Application {
                                                 neverasListView
                                                                 .getItems()
                                                                 .clear();
+                                                actualizarIndicadores();
                                         }
                                 });
         }
@@ -896,6 +1061,7 @@ public class Main extends Application {
                                                 nuevaConfig.peso);
 
                                 actualizarListaNeveras();
+                                actualizarIndicadores();
                         }
                 });
         }
@@ -945,6 +1111,7 @@ public class Main extends Application {
                                                                 .remove(nevera);
 
                                                 actualizarListaNeveras();
+                                                actualizarIndicadores();
                                         }
                                 });
         }
@@ -1084,6 +1251,7 @@ public class Main extends Application {
                                         pedidosListView
                                                         .getSelectionModel()
                                                         .select(pedido);
+                                        actualizarIndicadores();
 
                                 } catch (NumberFormatException e) {
 
@@ -1289,6 +1457,7 @@ public class Main extends Application {
                                 // ==========================================
 
                                 actualizarListaNeveras();
+                                actualizarIndicadores();
                         }
                 });
         }
