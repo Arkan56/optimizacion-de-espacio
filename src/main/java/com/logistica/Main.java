@@ -25,10 +25,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class Main extends Application {
 
@@ -535,6 +539,76 @@ public class Main extends Application {
                 escena3D.heightProperty()
                                 .bind(
                                                 visorContainer.heightProperty());
+
+                // ==========================================
+                // LEYENDA DE COLORES POR PEDIDO
+                // ==========================================
+
+                VBox leyenda = construirLeyenda(acomodadas);
+
+                StackPane.setAlignment(leyenda, Pos.TOP_LEFT);
+
+                // Que no bloquee el arrastre del mouse sobre el visor 3D
+                leyenda.setMouseTransparent(true);
+
+                visorContainer.getChildren().add(leyenda);
+        }
+
+        private VBox construirLeyenda(List<Nevera> acomodadas) {
+
+                Map<Integer, Color> mapaColores = FurgonViewer3D.generarMapaColoresParadas(acomodadas);
+
+                VBox leyenda = new VBox(5);
+
+                leyenda.setPadding(new Insets(10));
+
+                leyenda.setStyle(
+                                "-fx-background-color: rgba(0,0,0,0.55);"
+                                                + "-fx-background-radius: 8;");
+
+                Label titulo = new Label("Leyenda (parada → pedido)");
+
+                titulo.setStyle(
+                                "-fx-text-fill: white;"
+                                                + "-fx-font-weight: bold;"
+                                                + "-fx-font-size: 12px;");
+
+                leyenda.getChildren().add(titulo);
+
+                List<Integer> paradasOrdenadas = new ArrayList<>(mapaColores.keySet());
+
+                Collections.sort(paradasOrdenadas);
+
+                for (Integer parada : paradasOrdenadas) {
+
+                        Color color = mapaColores.get(parada);
+
+                        String clienteTexto = pedidos.stream()
+                                        .filter(p -> p.getOrdenParada() == parada)
+                                        .map(Pedido::getCliente)
+                                        .findFirst()
+                                        .orElse("?");
+
+                        Rectangle swatch = new Rectangle(14, 14);
+
+                        swatch.setFill(color);
+                        swatch.setStroke(Color.WHITE);
+
+                        Label texto = new Label(
+                                        "Parada " + parada + " - " + clienteTexto);
+
+                        texto.setStyle(
+                                        "-fx-text-fill: white;"
+                                                        + "-fx-font-size: 12px;");
+
+                        HBox fila = new HBox(8, swatch, texto);
+
+                        fila.setAlignment(Pos.CENTER_LEFT);
+
+                        leyenda.getChildren().add(fila);
+                }
+
+                return leyenda;
         }
 
         private void mostrarInformacion(String mensaje) {
