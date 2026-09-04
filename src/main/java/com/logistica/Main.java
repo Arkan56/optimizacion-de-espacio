@@ -83,11 +83,11 @@ public class Main extends Application {
                 anchoField.setPrefWidth(80);
 
                 Label altoLabel = new Label("Alto:");
-                altoField = new TextField("250");
+                altoField = new TextField("220");
                 altoField.setPrefWidth(80);
 
                 Label largoLabel = new Label("Largo:");
-                largoField = new TextField("500");
+                largoField = new TextField("420");
                 largoField.setPrefWidth(80);
 
                 Button actualizarButton = new Button("Actualizar furgón");
@@ -354,22 +354,31 @@ public class Main extends Application {
 
                 // ==========================================
                 // PESO VOLUMÉTRICO
+                // Fórmula: Volumen (m³) × 400
                 // ==========================================
 
                 double pesoVolumetricoTotal = 0;
-                // Define el factor de conversión (5000 es el estándar internacional más común)
-                final double FACTOR_CONVERSION = 5000.0;
+
+                final double FACTOR_PESO_VOLUMETRICO = 400.0;
 
                 for (Nevera nevera : neveras) {
-                        double volumen = nevera.getLargo()
-                                        * nevera.getAncho()
-                                        * nevera.getAlto();
 
-                        // Calculas el peso volumétrico de esta nevera y lo sumas al total
-                        pesoVolumetricoTotal += (volumen / FACTOR_CONVERSION);
+                        // Convertir centímetros a metros
+                        double largoMetros = nevera.getLargo() / 100.0;
+                        double anchoMetros = nevera.getAncho() / 100.0;
+                        double altoMetros = nevera.getAlto() / 100.0;
+
+                        // Calcular volumen en m³
+                        double volumen = largoMetros
+                                        * anchoMetros
+                                        * altoMetros;
+
+                        // Peso volumétrico = Volumen × 400
+                        pesoVolumetricoTotal += volumen * FACTOR_PESO_VOLUMETRICO;
                 }
 
-                pesoVolumetricoLabel.setText(String.format("%.2f kg", pesoVolumetricoTotal));
+                pesoVolumetricoLabel.setText(
+                                String.format("%.2f kg", pesoVolumetricoTotal));
 
                 // ==========================================
                 // VOLUMEN UTILIZADO
@@ -556,7 +565,7 @@ public class Main extends Application {
                                 "Cliente A",
                                 3);
 
-                Nevera.Tipo tipoPedido1 = Nevera.Tipo.L56;
+                Nevera.Tipo tipoPedido1 = Nevera.Tipo.CAPACIDAD_56L;
 
                 ConfiguracionNevera configPedido1 = obtenerConfiguracionNevera(tipoPedido1);
 
@@ -579,7 +588,7 @@ public class Main extends Application {
                                 "Cliente B",
                                 2);
 
-                Nevera.Tipo tipoPedido2 = Nevera.Tipo.L18;
+                Nevera.Tipo tipoPedido2 = Nevera.Tipo.CAPACIDAD_18L;
 
                 ConfiguracionNevera configPedido2 = obtenerConfiguracionNevera(tipoPedido2);
 
@@ -604,7 +613,7 @@ public class Main extends Application {
 
                 // Nevera N3 - L18
 
-                Nevera.Tipo tipoN3 = Nevera.Tipo.L18;
+                Nevera.Tipo tipoN3 = Nevera.Tipo.CAPACIDAD_18L;
 
                 ConfiguracionNevera configN3 = obtenerConfiguracionNevera(tipoN3);
 
@@ -620,7 +629,7 @@ public class Main extends Application {
 
                 // Nevera N4 - L56
 
-                Nevera.Tipo tipoN4 = Nevera.Tipo.L56;
+                Nevera.Tipo tipoN4 = Nevera.Tipo.CAPACIDAD_56L;
 
                 ConfiguracionNevera configN4 = obtenerConfiguracionNevera(tipoN4);
 
@@ -784,14 +793,19 @@ public class Main extends Application {
 
                 pedidosListView.getItems().clear();
 
-                pedidosListView.getItems().addAll(
-                                pedidos);
+                pedidosListView.getItems().addAll(pedidos);
 
-                if (seleccionado != null) {
+                if (seleccionado != null && pedidos.contains(seleccionado)) {
 
                         pedidosListView
                                         .getSelectionModel()
                                         .select(seleccionado);
+
+                } else if (!pedidos.isEmpty()) {
+
+                        pedidosListView
+                                        .getSelectionModel()
+                                        .selectFirst();
                 }
         }
 
@@ -827,17 +841,40 @@ public class Main extends Application {
 
                                         if (resultado == ButtonType.OK) {
 
+                                                // Eliminar de la lista principal
                                                 pedidos.remove(pedido);
 
+                                                // Limpiar la selección actual
                                                 pedidosListView
-                                                                .getItems()
-                                                                .remove(pedido);
+                                                                .getSelectionModel()
+                                                                .clearSelection();
 
+                                                // Actualizar la vista completa
+                                                actualizarVistaPedidos();
+
+                                                // Limpiar selección anterior
                                                 pedidoSeleccionado = null;
 
+                                                // Limpiar lista de neveras
                                                 neverasListView
                                                                 .getItems()
                                                                 .clear();
+
+                                                // Si todavía quedan pedidos,
+                                                // seleccionar automáticamente el primero
+                                                if (!pedidos.isEmpty()) {
+
+                                                        pedidosListView
+                                                                        .getSelectionModel()
+                                                                        .selectFirst();
+
+                                                        pedidoSeleccionado = pedidosListView
+                                                                        .getSelectionModel()
+                                                                        .getSelectedItem();
+
+                                                        actualizarListaNeveras();
+                                                }
+
                                                 actualizarIndicadores();
                                         }
                                 });
@@ -1293,30 +1330,29 @@ public class Main extends Application {
                 // CAMPOS DEL FORMULARIO
                 // ==========================================
 
-                TextField idField = new TextField();
-
                 ComboBox<Nevera.Tipo> tipoComboBox = new ComboBox<>();
 
                 tipoComboBox.getItems().addAll(
                                 Nevera.Tipo.values());
 
+                TextField cantidadField = new TextField("1");
+
                 // Campos automáticos
+
                 TextField anchoNeveraField = new TextField();
-
                 TextField altoNeveraField = new TextField();
-
                 TextField largoNeveraField = new TextField();
-
                 TextField pesoField = new TextField();
 
                 // No permitir modificar manualmente
-                anchoNeveraField.setEditable(true);
-                altoNeveraField.setEditable(true);
-                largoNeveraField.setEditable(true);
-                pesoField.setEditable(true);
+
+                anchoNeveraField.setEditable(false);
+                altoNeveraField.setEditable(false);
+                largoNeveraField.setEditable(false);
+                pesoField.setEditable(false);
 
                 // ==========================================
-                // FUNCIÓN PARA ACTUALIZAR CAMPOS
+                // ACTUALIZAR CONFIGURACIÓN SEGÚN EL TIPO
                 // ==========================================
 
                 tipoComboBox.setOnAction(event -> {
@@ -1341,10 +1377,12 @@ public class Main extends Application {
                         }
                 });
 
-                // Seleccionar el primer tipo automáticamente
+                // ==========================================
+                // SELECCIONAR PRIMER TIPO
+                // ==========================================
+
                 tipoComboBox.getSelectionModel().selectFirst();
 
-                // Ejecutar la configuración inicial
                 Nevera.Tipo tipoInicial = tipoComboBox.getValue();
 
                 ConfiguracionNevera configInicial = obtenerConfiguracionNevera(tipoInicial);
@@ -1371,11 +1409,11 @@ public class Main extends Application {
 
                 contenido.getChildren().addAll(
 
-                                new Label("ID de la nevera:"),
-                                idField,
-
                                 new Label("Tipo:"),
                                 tipoComboBox,
+
+                                new Label("Cantidad:"),
+                                cantidadField,
 
                                 new Label("Ancho:"),
                                 anchoNeveraField,
@@ -1395,10 +1433,10 @@ public class Main extends Application {
 
                 Dialog<ButtonType> dialog = new Dialog<>();
 
-                dialog.setTitle("Agregar nevera");
+                dialog.setTitle("Agregar neveras");
 
                 dialog.setHeaderText(
-                                "Agregar nevera al pedido "
+                                "Agregar neveras al pedido "
                                                 + pedidoSeleccionado.getId());
 
                 dialog.getDialogPane()
@@ -1418,48 +1456,102 @@ public class Main extends Application {
 
                         if (resultado == ButtonType.OK) {
 
-                                String id = idField.getText().trim();
+                                try {
 
-                                if (id.isEmpty()) {
+                                        // ==========================================
+                                        // VALIDAR CANTIDAD
+                                        // ==========================================
+
+                                        int cantidad = Integer.parseInt(
+                                                        cantidadField.getText().trim());
+
+                                        if (cantidad <= 0) {
+
+                                                mostrarError(
+                                                                "La cantidad debe ser mayor que cero.");
+
+                                                return;
+                                        }
+
+                                        Nevera.Tipo tipo = tipoComboBox.getValue();
+
+                                        ConfiguracionNevera config = obtenerConfiguracionNevera(tipo);
+
+                                        // ==========================================
+                                        // CREAR LAS NEVERAS
+                                        // ==========================================
+
+                                        for (int i = 0; i < cantidad; i++) {
+
+                                                String id = generarIdNevera();
+
+                                                Nevera nevera = new Nevera(
+
+                                                                id,
+                                                                tipo,
+
+                                                                config.largo,
+                                                                config.ancho,
+                                                                config.alto,
+                                                                config.peso,
+
+                                                                pedidoSeleccionado.getOrdenParada());
+
+                                                pedidoSeleccionado.agregarNevera(
+                                                                nevera);
+                                        }
+
+                                        // ==========================================
+                                        // ACTUALIZAR INTERFAZ
+                                        // ==========================================
+
+                                        actualizarListaNeveras();
+
+                                        actualizarIndicadores();
+
+                                        mostrarInformacion(
+                                                        cantidad
+                                                                        + " nevera(s) agregada(s) correctamente.");
+
+                                } catch (NumberFormatException e) {
 
                                         mostrarError(
-                                                        "Debes ingresar un ID para la nevera.");
-
-                                        return;
+                                                        "La cantidad debe ser un número entero válido.");
                                 }
-
-                                Nevera.Tipo tipo = tipoComboBox.getValue();
-
-                                ConfiguracionNevera config = obtenerConfiguracionNevera(tipo);
-
-                                // ==========================================
-                                // CREAR NEVERA
-                                // ==========================================
-
-                                Nevera nevera = new Nevera(
-                                                id,
-                                                tipo,
-                                                config.largo,
-                                                config.ancho,
-                                                config.alto,
-                                                config.peso,
-                                                pedidoSeleccionado.getOrdenParada());
-
-                                // ==========================================
-                                // AGREGAR AL PEDIDO
-                                // ==========================================
-
-                                pedidoSeleccionado.agregarNevera(
-                                                nevera);
-
-                                // ==========================================
-                                // ACTUALIZAR LISTA
-                                // ==========================================
-
-                                actualizarListaNeveras();
-                                actualizarIndicadores();
                         }
                 });
+        }
+
+        private String generarIdNevera() {
+
+                int mayorNumero = 0;
+
+                List<Nevera> todasLasNeveras = obtenerNeverasDePedidos();
+
+                for (Nevera nevera : todasLasNeveras) {
+
+                        String id = nevera.getId();
+
+                        if (id.startsWith("N")) {
+
+                                try {
+
+                                        int numero = Integer.parseInt(
+                                                        id.substring(1));
+
+                                        if (numero > mayorNumero) {
+
+                                                mayorNumero = numero;
+                                        }
+
+                                } catch (NumberFormatException e) {
+
+                                        // Ignorar IDs que no tengan formato N1, N2, etc.
+                                }
+                        }
+                }
+
+                return "N" + (mayorNumero + 1);
         }
 
         private ConfiguracionNevera obtenerConfiguracionNevera(
@@ -1467,18 +1559,18 @@ public class Main extends Application {
 
                 switch (tipo) {
 
-                        case L56:
+                        case CAPACIDAD_56L:
                                 return new ConfiguracionNevera(
-                                                60,
-                                                80,
-                                                40,
+                                                20.2,
+                                                19.6,
+                                                28.2,
                                                 45);
 
-                        case L18:
+                        case CAPACIDAD_18L:
                                 return new ConfiguracionNevera(
-                                                50,
-                                                60,
-                                                30,
+                                                28.2,
+                                                13,
+                                                27.5,
                                                 25);
 
                         default:

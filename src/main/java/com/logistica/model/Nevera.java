@@ -2,7 +2,20 @@ package com.logistica.model;
 
 public class Nevera {
     public enum Tipo {
-        L18, L56
+
+        CAPACIDAD_18L("18L"),
+        CAPACIDAD_56L("56L");
+
+        private final String descripcion;
+
+        Tipo(String descripcion) {
+            this.descripcion = descripcion;
+        }
+
+        @Override
+        public String toString() {
+            return descripcion;
+        }
     }
 
     private String id;
