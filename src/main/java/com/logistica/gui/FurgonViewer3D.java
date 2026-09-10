@@ -28,10 +28,8 @@ public class FurgonViewer3D {
 
     private static double mouseOldX;
     private static double mouseOldY;
-
     private static double zoom = -1000;
 
-    // Colores fijos para los extremos del furgón
     private static final Color COLOR_FONDO = Color.web("#3355ff");
     private static final Color COLOR_PUERTA = Color.web("#ffaa00");
 
@@ -44,10 +42,6 @@ public class FurgonViewer3D {
         Group root3D = new Group();
         Group modelo = new Group();
 
-        // =====================================================
-        // DIMENSIONES
-        // =====================================================
-
         double ancho = furgon.getAncho();
         double alto = furgon.getAlto();
         double largo = furgon.getLargo();
@@ -56,36 +50,19 @@ public class FurgonViewer3D {
         double centroY = alto / 2.0;
         double centroZ = largo / 2.0;
 
-        // =====================================================
-        // 1. CREAR ESTRUCTURA DEL FURGÓN (con marcas de fondo/puerta)
-        // =====================================================
-
         crearEstructuraFurgon(modelo, ancho, alto, largo);
 
-        // =====================================================
-        // SUELO DEL FURGÓN
-        // =====================================================
-
         double grosorSuelo = 5;
-
         Box suelo = new Box(ancho, grosorSuelo, largo);
-
-        PhongMaterial materialSuelo = new PhongMaterial(Color.rgb(90, 90, 90));
-
+        PhongMaterial materialSuelo = new PhongMaterial(Color.rgb(100, 100, 100));
+        materialSuelo.setSpecularColor(Color.rgb(60, 60, 60));
         suelo.setMaterial(materialSuelo);
-
         suelo.setTranslateY(alto / 2.0 + grosorSuelo / 2.0);
-
         modelo.getChildren().add(suelo);
-
-        // =====================================================
-        // 2. CREAR NEVERAS (color según pedido/parada)
-        // =====================================================
 
         Map<Integer, Color> mapaColores = generarMapaColoresParadas(neverasCargadas);
 
         for (Nevera n : neverasCargadas) {
-
             Box cajaNevera = new Box(
                     n.getAncho(),
                     n.getAlto(),
@@ -95,20 +72,13 @@ public class FurgonViewer3D {
                     n.getOrdenParada(),
                     Color.GRAY);
 
-            cajaNevera.setMaterial(
-                    new PhongMaterial(colorParada));
+            PhongMaterial mat = new PhongMaterial(colorParada);
+            mat.setSpecularColor(Color.rgb(80, 80, 80));
+            cajaNevera.setMaterial(mat);
 
-            double x = n.getPosX()
-                    + n.getAncho() / 2.0
-                    - centroX;
-
-            double y = centroY
-                    - n.getPosY()
-                    - n.getAlto() / 2.0;
-
-            double z = n.getPosZ()
-                    + n.getLargo() / 2.0
-                    - centroZ;
+            double x = n.getPosX() + n.getAncho() / 2.0 - centroX;
+            double y = centroY - n.getPosY() - n.getAlto() / 2.0;
+            double z = n.getPosZ() + n.getLargo() / 2.0 - centroZ;
 
             cajaNevera.setTranslateX(x);
             cajaNevera.setTranslateY(y);
@@ -116,47 +86,30 @@ public class FurgonViewer3D {
 
             modelo.getChildren().add(cajaNevera);
 
-            crearBordesCaja(
-                    modelo,
-                    x,
-                    y,
-                    z,
-                    n.getAncho(),
-                    n.getAlto(),
-                    n.getLargo());
+            crearBordesCaja(modelo, x, y, z, n.getAncho(), n.getAlto(), n.getLargo());
         }
 
         root3D.getChildren().add(modelo);
 
-        // =====================================================
-        // 3. ILUMINACIÓN
-        // =====================================================
+        // ILUMINACIÓN MULTI-PUNTO
+        AmbientLight luzAmbiente = new AmbientLight(Color.rgb(210, 210, 210));
 
-        AmbientLight luzAmbiente = new AmbientLight(Color.WHITE);
+        PointLight luzFrontal = new PointLight(Color.WHITE);
+        luzFrontal.setTranslateX(-500);
+        luzFrontal.setTranslateY(-800);
+        luzFrontal.setTranslateZ(-800);
 
-        PointLight luzPrincipal = new PointLight(Color.WHITE);
-        luzPrincipal.setTranslateX(-500);
-        luzPrincipal.setTranslateY(-500);
-        luzPrincipal.setTranslateZ(-500);
+        PointLight luzTrasera = new PointLight(Color.rgb(180, 180, 180));
+        luzTrasera.setTranslateX(500);
+        luzTrasera.setTranslateY(-400);
+        luzTrasera.setTranslateZ(800);
 
-        root3D.getChildren().addAll(
-                luzAmbiente,
-                luzPrincipal);
-
-        // =====================================================
-        // 4. CÁMARA
-        // =====================================================
+        root3D.getChildren().addAll(luzAmbiente, luzFrontal, luzTrasera);
 
         PerspectiveCamera camera = new PerspectiveCamera(true);
-
         camera.setNearClip(0.1);
         camera.setFarClip(10000);
-
         camera.setTranslateZ(zoom);
-
-        // =====================================================
-        // 5. SUBSCENE
-        // =====================================================
 
         SubScene subScene = new SubScene(
                 root3D,
@@ -165,12 +118,8 @@ public class FurgonViewer3D {
                 true,
                 SceneAntialiasing.BALANCED);
 
-        subScene.setFill(Color.rgb(35, 35, 35));
+        subScene.setFill(Color.web("#1e222b"));
         subScene.setCamera(camera);
-
-        // =====================================================
-        // 6. ROTACIÓN CON MOUSE
-        // =====================================================
 
         Rotate rotateY = new Rotate(-30, Rotate.Y_AXIS);
         Rotate rotateX = new Rotate(-15, Rotate.X_AXIS);
@@ -178,14 +127,11 @@ public class FurgonViewer3D {
         modelo.getTransforms().addAll(rotateY, rotateX);
 
         subScene.setOnMousePressed((MouseEvent event) -> {
-
             mouseOldX = event.getSceneX();
             mouseOldY = event.getSceneY();
-
         });
 
         subScene.setOnMouseDragged((MouseEvent event) -> {
-
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
 
@@ -195,43 +141,23 @@ public class FurgonViewer3D {
             mouseOldX = mouseX;
             mouseOldY = mouseY;
 
-            rotateY.setAngle(
-                    rotateY.getAngle() + deltaX * 0.5);
-
-            rotateX.setAngle(
-                    rotateX.getAngle() - deltaY * 0.5);
-
+            rotateY.setAngle(rotateY.getAngle() + deltaX * 0.5);
+            rotateX.setAngle(rotateX.getAngle() - deltaY * 0.5);
         });
 
-        // =====================================================
-        // 7. ZOOM CON SCROLL
-        // =====================================================
-
         subScene.setOnScroll((ScrollEvent event) -> {
-
             zoom += event.getDeltaY();
-
-            if (zoom > -300) {
+            if (zoom > -300)
                 zoom = -300;
-            }
-
-            if (zoom < -3000) {
+            if (zoom < -3000)
                 zoom = -3000;
-            }
-
             camera.setTranslateZ(zoom);
-
         });
 
         return subScene;
     }
 
-    // =========================================================
-    // MAPA DE COLORES POR PARADA (dinámico, no fijo a 1/2/3)
-    // =========================================================
-
     public static Map<Integer, Color> generarMapaColoresParadas(List<Nevera> neveras) {
-
         List<Integer> paradas = neveras.stream()
                 .map(Nevera::getOrdenParada)
                 .distinct()
@@ -239,16 +165,13 @@ public class FurgonViewer3D {
                 .collect(Collectors.toList());
 
         Map<Integer, Color> mapa = new LinkedHashMap<>();
-
         for (int i = 0; i < paradas.size(); i++) {
             mapa.put(paradas.get(i), obtenerColorPorIndice(i));
         }
-
         return mapa;
     }
 
     private static Color obtenerColorPorIndice(int indice) {
-
         Color[] paleta = {
                 Color.DODGERBLUE,
                 Color.ORANGE,
@@ -261,111 +184,59 @@ public class FurgonViewer3D {
                 Color.SLATEBLUE,
                 Color.YELLOWGREEN
         };
-
-        if (indice < paleta.length) {
+        if (indice < paleta.length)
             return paleta[indice];
-        }
-
-        // Si hay más paradas que colores en la paleta,
-        // generamos colores adicionales rotando el tono (hue).
         double hue = (indice * 47) % 360;
         return Color.hsb(hue, 0.65, 0.85);
     }
 
-    // =========================================================
-    // ESTRUCTURA DEL FURGÓN (con fondo/puerta diferenciados)
-    // =========================================================
-
     private static void crearEstructuraFurgon(
-            Group modelo,
-            double ancho,
-            double alto,
-            double largo) {
+            Group modelo, double ancho, double alto, double largo) {
 
-        double x1 = -ancho / 2;
-        double x2 = ancho / 2;
-
-        double y1 = -alto / 2; // techo
-        double y2 = alto / 2; // piso
-
-        double z1 = -largo / 2; // FONDO
-        double z2 = largo / 2; // PUERTA
+        double x1 = -ancho / 2, x2 = ancho / 2;
+        double y1 = -alto / 2, y2 = alto / 2;
+        double z1 = -largo / 2, z2 = largo / 2;
 
         Color colorNeutro = Color.LIGHTGRAY;
 
-        // ==========================
-        // BASE (piso)
-        // ==========================
-
-        crearLinea(modelo, x1, y2, z1, x2, y2, z1, COLOR_FONDO); // borde de piso en el fondo
+        crearLinea(modelo, x1, y2, z1, x2, y2, z1, COLOR_FONDO);
         crearLinea(modelo, x2, y2, z1, x2, y2, z2, colorNeutro);
-        crearLinea(modelo, x2, y2, z2, x1, y2, z2, COLOR_PUERTA); // borde de piso en la puerta
+        crearLinea(modelo, x2, y2, z2, x1, y2, z2, COLOR_PUERTA);
         crearLinea(modelo, x1, y2, z2, x1, y2, z1, colorNeutro);
 
-        // ==========================
-        // TECHO
-        // ==========================
-
-        crearLinea(modelo, x1, y1, z1, x2, y1, z1, COLOR_FONDO); // borde de techo en el fondo
+        crearLinea(modelo, x1, y1, z1, x2, y1, z1, COLOR_FONDO);
         crearLinea(modelo, x2, y1, z1, x2, y1, z2, colorNeutro);
-        crearLinea(modelo, x2, y1, z2, x1, y1, z2, COLOR_PUERTA); // borde de techo en la puerta
+        crearLinea(modelo, x2, y1, z2, x1, y1, z2, COLOR_PUERTA);
         crearLinea(modelo, x1, y1, z2, x1, y1, z1, colorNeutro);
-
-        // ==========================
-        // COLUMNAS VERTICALES
-        // ==========================
 
         crearLinea(modelo, x1, y1, z1, x1, y2, z1, COLOR_FONDO);
         crearLinea(modelo, x2, y1, z1, x2, y2, z1, COLOR_FONDO);
         crearLinea(modelo, x1, y1, z2, x1, y2, z2, COLOR_PUERTA);
         crearLinea(modelo, x2, y1, z2, x2, y2, z2, COLOR_PUERTA);
 
-        // ==========================
-        // ETIQUETAS DE TEXTO
-        // ==========================
-
         agregarEtiqueta(modelo, "FONDO", 0, y1 - 30, z1, COLOR_FONDO);
         agregarEtiqueta(modelo, "PUERTA", 0, y1 - 30, z2, COLOR_PUERTA);
     }
 
     private static void agregarEtiqueta(
-            Group modelo,
-            String texto,
-            double x,
-            double y,
-            double z,
-            Color color) {
+            Group modelo, String texto, double x, double y, double z, Color color) {
 
         Text etiqueta = new Text(texto);
-
         etiqueta.setFill(color);
         etiqueta.setFont(Font.font(40));
-
-        // Centrado aproximado horizontal del texto sobre el punto x,z
         etiqueta.setTranslateX(x - texto.length() * 11);
         etiqueta.setTranslateY(y);
         etiqueta.setTranslateZ(z);
-
         modelo.getChildren().add(etiqueta);
     }
 
     private static void crearBordesCaja(
-            Group grupo,
-            double centroX,
-            double centroY,
-            double centroZ,
-            double ancho,
-            double alto,
-            double largo) {
+            Group grupo, double centroX, double centroY, double centroZ,
+            double ancho, double alto, double largo) {
 
-        double x1 = centroX - ancho / 2.0;
-        double x2 = centroX + ancho / 2.0;
-
-        double y1 = centroY - alto / 2.0;
-        double y2 = centroY + alto / 2.0;
-
-        double z1 = centroZ - largo / 2.0;
-        double z2 = centroZ + largo / 2.0;
+        double x1 = centroX - ancho / 2.0, x2 = centroX + ancho / 2.0;
+        double y1 = centroY - alto / 2.0, y2 = centroY + alto / 2.0;
+        double z1 = centroZ - largo / 2.0, z2 = centroZ + largo / 2.0;
 
         Color colorBorde = Color.BLACK;
 
@@ -386,23 +257,15 @@ public class FurgonViewer3D {
     }
 
     private static void crearLinea(
-            Group grupo,
-            double x1, double y1, double z1,
-            double x2, double y2, double z2,
-            Color color) {
+            Group grupo, double x1, double y1, double z1,
+            double x2, double y2, double z2, Color color) {
 
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double dz = z2 - z1;
-
-        double longitud = Math.sqrt(
-                dx * dx +
-                        dy * dy +
-                        dz * dz);
+        double dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
+        double longitud = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
         Cylinder linea = new Cylinder(2, longitud);
-
         PhongMaterial material = new PhongMaterial(color);
+        material.setSpecularColor(Color.rgb(80, 80, 80));
         linea.setMaterial(material);
 
         linea.setTranslateX((x1 + x2) / 2);
@@ -410,12 +273,9 @@ public class FurgonViewer3D {
         linea.setTranslateZ((z1 + z2) / 2);
 
         if (Math.abs(dx) > 0) {
-
             linea.setRotationAxis(Rotate.Z_AXIS);
             linea.setRotate(90);
-
         } else if (Math.abs(dz) > 0) {
-
             linea.setRotationAxis(Rotate.X_AXIS);
             linea.setRotate(90);
         }

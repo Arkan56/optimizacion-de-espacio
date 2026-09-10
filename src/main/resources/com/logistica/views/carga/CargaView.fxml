@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" 
+            xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.logistica.controllers.carga.CargaController">
+
+    <!-- BARRA SUPERIOR E INDICADORES -->
+    <top>
+        <VBox spacing="10">
+            <!-- Controles del Furgón -->
+            <HBox alignment="CENTER" spacing="10">
+                <padding>
+                    <Insets top="15" right="15" bottom="5" left="15" />
+                </padding>
+                
+                <Label text="Ancho:" />
+                <TextField fx:id="anchoField" text="200" prefWidth="80" />
+                
+                <Label text="Alto:" />
+                <TextField fx:id="altoField" text="220" prefWidth="80" />
+                
+                <Label text="Largo:" />
+                <TextField fx:id="largoField" text="420" prefWidth="80" />
+                
+                <Button text="Actualizar furgón" onAction="#actualizarFurgon" />
+                <Button text="🚀 Optimizar carga" onAction="#optimizarCarga" />
+            </HBox>
+
+            <!-- Indicadores -->
+            <HBox alignment="CENTER" spacing="30">
+                <padding>
+                    <Insets top="5" right="10" bottom="10" left="10" />
+                </padding>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+                    <Label text="📦 Volumen utilizado" style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+                    <Label fx:id="volumenUtilizadoLabel" text="0%" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+                    <Label text="🧊 Neveras totales" style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+                    <Label fx:id="neverasTotalesLabel" text="0" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+                    <Label text="⚖ Peso total" style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+                    <Label fx:id="pesoTotalLabel" text="0 kg" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+                    <Label text="📍 Paradas totales" style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+                    <Label fx:id="paradasTotalesLabel" text="0" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <padding><Insets top="10" right="10" bottom="10" left="10" /></padding>
+                    <Label text="📐 Peso volumétrico" style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+                    <Label fx:id="pesoVolumetricoLabel" text="0 kg" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- PANEL PRINCIPAL DIVIDIDO -->
+    <center>
+        <SplitPane dividerPositions="0.25, 0.50">
+            <items>
+                <!-- Panel de Pedidos -->
+                <VBox spacing="10" prefWidth="250">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10" />
+                    </padding>
+                    <Label text="PEDIDOS" style="-fx-font-weight: bold;" />
+                    <ListView fx:id="pedidosListView" VBox.vgrow="ALWAYS" />
+                    <Button text="+ Nuevo pedido" onAction="#crearPedido" maxWidth="Infinity" />
+                    <Button text="✏ Editar pedido" onAction="#editarPedido" maxWidth="Infinity" />
+                    <Button text="📦 Consolidar medicamentos" onAction="#abrirVentanaEmpaquetado" maxWidth="Infinity" />
+                    <Button text="🗑 Eliminar pedido" onAction="#eliminarPedido" maxWidth="Infinity" />
+                </VBox>
+
+                <!-- Panel de Neveras -->
+                <VBox spacing="10" prefWidth="300">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10" />
+                    </padding>
+                    <Label text="NEVERAS DEL PEDIDO" style="-fx-font-weight: bold;" />
+                    <ListView fx:id="neverasListView" VBox.vgrow="ALWAYS" />
+                    <Button text="+ Agregar nevera" onAction="#agregarNevera" maxWidth="Infinity" />
+                    <Button text="✏ Editar nevera" onAction="#editarNevera" maxWidth="Infinity" />
+                    <Button text="📋 Ver Contenido" onAction="#verContenidoNevera" maxWidth="Infinity" />
+                    <Button text="👁 Ver Nevera 3D" onAction="#mostrarVista3DNevera" maxWidth="Infinity" />
+                    <Button text="🗑 Eliminar nevera" onAction="#eliminarNevera" maxWidth="Infinity" />
+                </VBox>
+
+                <!-- Visor 3D -->
+                <StackPane fx:id="visorContainer" />
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>

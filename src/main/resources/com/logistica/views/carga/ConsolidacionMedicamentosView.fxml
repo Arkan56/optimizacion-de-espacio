@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.logistica.controllers.carga.ConsolidacionMedicamentosController"
+      spacing="12" prefWidth="480.0" prefHeight="500.0">
+    
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15" />
+    </padding>
+
+    <Label text="Catálogo de Productos Roche:" style="-fx-font-weight: bold;" />
+    <ListView fx:id="catalogoListView" prefHeight="160.0" />
+
+    <!-- Barra de selección de cantidad -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Cantidad:" />
+        <Spinner fx:id="cantidadSpinner" prefWidth="90" editable="true" />
+        <Button text="➕ Añadir al pedido" onAction="#agregarItem" style="-fx-base: #2e7d32; -fx-text-fill: white;" />
+        <Button text="🗑 Quitar" onAction="#quitarItem" />
+    </HBox>
+
+    <Label text="Medicamentos consolidados para esta orden:" style="-fx-font-weight: bold;" />
+    <ListView fx:id="seleccionadosListView" prefHeight="160.0" VBox.vgrow="ALWAYS" />
+
+    <Label fx:id="resumenLabel" text="Total: 0 ítems | Volumen: 0 cm³" style="-fx-font-style: italic; -fx-text-fill: #555555;" />
+</VBox>

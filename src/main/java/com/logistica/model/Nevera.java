@@ -1,10 +1,14 @@
 package com.logistica.model;
 
-public class Nevera {
-    public enum Tipo {
+import com.logistica.dto.ItemMedicamentoDTO;
+import java.util.ArrayList;
+import java.util.List;
 
-        CAPACIDAD_18L("18L"),
-        CAPACIDAD_56L("56L");
+public class Nevera {
+
+    public enum Tipo {
+        CAPACIDAD_56L("56 Litros"),
+        CAPACIDAD_18L("18 Litros");
 
         private final String descripcion;
 
@@ -20,12 +24,21 @@ public class Nevera {
 
     private String id;
     private Tipo tipo;
-    private double largo, ancho, alto; // en milímetros o cm
+    private double largo;
+    private double ancho;
+    private double alto;
     private double pesoKg;
-    private int ordenParada; // Restricción LIFO (1 = primera entrega)
+    private int ordenParada;
 
-    // Posición asignada dentro del furgón (coordenadas X, Y, Z)
-    private double posX, posY, posZ;
+    private double posX;
+    private double posY;
+    private double posZ;
+
+    // Resumen DTO para listados
+    private List<ItemMedicamentoDTO> contenidoMedicamentos = new ArrayList<>();
+
+    // Lista física de cajas individuales con coordenadas (posX, posY, posZ)
+    private List<Medicamento> medicamentosEmpacados = new ArrayList<>();
 
     public Nevera(String id, Tipo tipo, double largo, double ancho, double alto, double pesoKg, int ordenParada) {
         this.id = id;
@@ -37,93 +50,110 @@ public class Nevera {
         this.ordenParada = ordenParada;
     }
 
-    // Getters y Setters
     public String getId() {
         return id;
-    }
-
-    public Tipo getTipo() {
-        return tipo;
-    }
-
-    public double getLargo() {
-        return largo;
-    }
-
-    public double getAncho() {
-        return ancho;
-    }
-
-    public double getAlto() {
-        return alto;
-    }
-
-    public int getOrdenParada() {
-        return ordenParada;
-    }
-
-    public double getPosX() {
-        return posX;
-    }
-
-    public double getPosY() {
-        return posY;
-    }
-
-    public double getPosZ() {
-        return posZ;
-    }
-
-    public double getPesoKg() {
-        return pesoKg;
-    }
-
-    public void setPosicion(double x, double y, double z) {
-        this.posX = x;
-        this.posY = y;
-        this.posZ = z;
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
+    public Tipo getTipo() {
+        return tipo;
+    }
+
     public void setTipo(Tipo tipo) {
         this.tipo = tipo;
+    }
+
+    public double getLargo() {
+        return largo;
     }
 
     public void setLargo(double largo) {
         this.largo = largo;
     }
 
+    public double getAncho() {
+        return ancho;
+    }
+
     public void setAncho(double ancho) {
         this.ancho = ancho;
+    }
+
+    public double getAlto() {
+        return alto;
     }
 
     public void setAlto(double alto) {
         this.alto = alto;
     }
 
+    public double getPesoKg() {
+        return pesoKg;
+    }
+
     public void setPesoKg(double pesoKg) {
         this.pesoKg = pesoKg;
+    }
+
+    public int getOrdenParada() {
+        return ordenParada;
     }
 
     public void setOrdenParada(int ordenParada) {
         this.ordenParada = ordenParada;
     }
 
+    public double getPosX() {
+        return posX;
+    }
+
+    public void setPosX(double posX) {
+        this.posX = posX;
+    }
+
+    public double getPosY() {
+        return posY;
+    }
+
+    public void setPosY(double posY) {
+        this.posY = posY;
+    }
+
+    public double getPosZ() {
+        return posZ;
+    }
+
+    public void setPosZ(double posZ) {
+        this.posZ = posZ;
+    }
+
+    public void setPosicion(double posX, double posY, double posZ) {
+        this.posX = posX;
+        this.posY = posY;
+        this.posZ = posZ;
+    }
+
+    public List<ItemMedicamentoDTO> getContenidoMedicamentos() {
+        return contenidoMedicamentos;
+    }
+
+    public void setContenidoMedicamentos(List<ItemMedicamentoDTO> contenidoMedicamentos) {
+        this.contenidoMedicamentos = contenidoMedicamentos;
+    }
+
+    public List<Medicamento> getMedicamentosEmpacados() {
+        return medicamentosEmpacados;
+    }
+
+    public void setMedicamentosEmpacados(List<Medicamento> medicamentosEmpacados) {
+        this.medicamentosEmpacados = medicamentosEmpacados;
+    }
+
     @Override
     public String toString() {
-
-        return id
-                + " - "
-                + tipo
-                + " ("
-                + ancho
-                + " x "
-                + alto
-                + " x "
-                + largo
-                + ")";
+        return id + " (" + tipo + ") - " + pesoKg + " kg";
     }
 }
